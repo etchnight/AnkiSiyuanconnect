@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anki与Siyuan同步</title>
+    <script src="js/AnkiConnect.js"></script>
+    <script src="js/SiyuanConnect.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/ServerConnect.js"></script>
+    <script src="js/statis.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div class="header">
+        <h1>Anki与Siyuan同步</h1>
+    </div>
+    <div class="clearfix">
+        <div class="column menu">
+            <ul>
+                <li><a href="javascript:void(0);" onclick="getSiyuanBlocks();">同步</a></li>
+                <li><a href="javascript:void(0);" onclick="getSiyuanBlocks('force')" type="force">强制同步</a></li>
+                <li><a href="javascript:void(0);" onclick="statis_Siyuan();">统计笔记数量,与同步无关,请勿使用</a> </li>
+            </ul>
+        </div>
+
+        <div class="colume content">
+            <h2>同步结果:</h2>
+            <hr>
+            <ul id="result">
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>

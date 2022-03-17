@@ -1,0 +1,61 @@
+:root {
+    
+    --widthNum:200px;
+  }
+
+* {
+    box-sizing: border-box;
+}
+
+.header,
+.footer {
+    background-color: grey;
+    color: white;
+    padding: 10px;
+}
+
+.column {
+    float: left;
+    padding: 15px;
+}
+
+/*清除浮动*/
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+
+.menu li {
+    padding: 8px;
+    margin-bottom: 8px;
+    background-color: #33b5e5;
+    color: #ffffff;
+}
+
+.menu li:hover {
+    background-color: #0099cc;
+}
+
+.menu li a {
+    display: block;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+  }
+
+
+.menu {
+    width:var(--widthNum) ;
+}
+
+.content {
+    margin-left:var(--widthNum);
+}
