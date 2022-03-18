@@ -15,23 +15,30 @@ app.get('/', function (req, res) {//映射到主页
     res.sendFile(__dirname + '/webapp/index.html');
 })
 
-app.post('/getfile/*',function(req,res){//获取文件
-    console.log(req);
-    var path=req.path;
-    var app_api = path.split("/");
-    fs.readFile(__dirname+"/webapp/"+ app_api[2], "binary", function (err, file) {
-        if (err) {
-            res.writeHead(500, {
-                'Content-Type': 'text/plain'
-            });
-            res.end(err);
-        } else {
-            res.writeHead(200, {
-                'Content-Type': "text/plain"
-            });
-            res.write(file, "binary");
-            res.end();
-        }
+app.post('/getfile', function (req, res) {//获取文件
+    //console.log(req);
+    var post = '';
+    // 通过req的data事件监听函数，每当接受到请求体的数据，就累加到post变量中
+    req.on('data', function (chunk) {
+        post += chunk;
+        console.log(post);
+    });
+    req.on('end', function () {
+        data = JSON.parse(post);
+        fs.readFile(__dirname + "/"+data.path, "binary", function (err, file) {
+            if (err) {
+                res.writeHead(500, {
+                    'Content-Type': 'text/plain'
+                });
+                res.end(err);
+            } else {
+                res.writeHead(200, {
+                    'Content-Type': "text/plain"
+                });
+                res.write(file, "binary");
+                res.end();
+            }
+        });
     });
 })
 

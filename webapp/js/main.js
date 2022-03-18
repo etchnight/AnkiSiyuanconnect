@@ -8,8 +8,9 @@ async function getSiyuanBlocks(type) {
     document.getElementById('result').innerHTML = "";
     var result_header = document.getElementById("result");
     //获取同步历史
-    let SyncHistory = await Server_invoke('/getfile/SyncHistory.txt', '');
-    //let SyncHistory = await Server_getfile('SyncHistory.txt', () => { });
+    let SyncHistory = await Server_invoke('/getfile', JSON.stringify({
+        "path":'webapp/user/SyncHistory.txt'
+    }));
     var Syncdata = SyncHistory.split(/[(\r\n)\r\n]+/);
     var SiyuanHistory = [];
     var AnkiHistory = [];
@@ -23,8 +24,9 @@ async function getSiyuanBlocks(type) {
         }
     }
     //console.log(AnkiHistory);
-    let lastSyncTime = await Server_invoke('/getfile/lastSyncTime.txt', '');
-    //let lastSyncTime = await Server_getfile('lastSyncTime.txt', () => { });
+    let lastSyncTime = await Server_invoke('/getfile', JSON.stringify({
+        "path":'webapp/user/lastSyncTime.txt'
+    }));
     lastSyncTime = parseInt(lastSyncTime);//转换为数字类型
     if (type == "force") {//强制同步,把lastSyncTime设置为0
         lastSyncTime = 0;
@@ -135,7 +137,7 @@ async function getSiyuanBlocks(type) {
                         "content":SiyuanId + "," + AnkiId + "\n",
                         "mode":"a+"
                     })
-                    await Server_invoke('/getfile//writefile', data);
+                    await Server_invoke('/writefile', data);
                     //网页输出
                     insertAfter("添加笔记" + SiyuanId + "," + AnkiId + ",并写入同步历史", result_header);
                 }else{
