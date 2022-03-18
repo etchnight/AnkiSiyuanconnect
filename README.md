@@ -1,24 +1,22 @@
 # AnkiSiyuanconnect
 
 #### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+用于思源笔记和Anki进行同步,目前功能较为初步,使用限制较多,未编写初始化所需代码
 
 #### 软件架构
-软件架构说明
+使用node.js作为服务器端,用于读写历史同步信息,前端是一个很简陋的网页.另外,目前绝大多数功能放置在前端,由于与Anki通信还存在跨域问题,后期可能会移至后端
 
 
 #### 安装教程
 
-1.  xxxx
-2.  xxxx
+1.  安装node.js
+2.  在Anki中添加AnkiConnect插件,插件码`2055492159`
 3.  xxxx
 
 #### 使用说明
 
-1.  xxxx
-2.  xxxx
+1.  运行startServer.cmd
+2.  在浏览器中访问http://localhost:3300/index.html 使用(不支持IE浏览器) 
 3.  xxxx
 
 #### 参与贡献
