@@ -5,7 +5,8 @@ function Server_invoke(address, data) {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'http://localhost:'+port + address);
-        xhr.send(data);//params可以为空
+        xhr.setRequestHeader("Content-type", "application/json");
+        xhr.send(JSON.stringify(data));//params可以为空
         //console.log(params);
         //监听响应结果（因为请求是异步的）
         //xhr.onreadystatechange = (e) => {

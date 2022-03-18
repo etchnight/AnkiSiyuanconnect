@@ -8,14 +8,14 @@ async function getSiyuanBlocks(type) {
     document.getElementById('result').innerHTML = "";
     var result_header = document.getElementById("result");
     //获取同步历史
-    let SyncHistory = await Server_invoke('/getfile', JSON.stringify({
-        "path":'webapp/user/SyncHistory.txt'
-    }));
+    let SyncHistory = await Server_invoke('/getfile', {
+        "path": "webapp/user/SyncHistory.txt"
+    });
     var Syncdata = SyncHistory.split(/[(\r\n)\r\n]+/);
     var SiyuanHistory = [];
     var AnkiHistory = [];
     var temparray = [];
-    var data={};//需要post的内容
+    //var data = {};//需要post的内容
     for (var j = 0; j < Syncdata.length - 1; j++) {
         if (Syncdata[j] != "") {
             temparray = Syncdata[j].split(",");
@@ -24,9 +24,9 @@ async function getSiyuanBlocks(type) {
         }
     }
     //console.log(AnkiHistory);
-    let lastSyncTime = await Server_invoke('/getfile', JSON.stringify({
-        "path":'webapp/user/lastSyncTime.txt'
-    }));
+    let lastSyncTime = await Server_invoke('/getfile', {
+        "path": 'webapp/user/lastSyncTime.txt'
+    });
     lastSyncTime = parseInt(lastSyncTime);//转换为数字类型
     if (type == "force") {//强制同步,把lastSyncTime设置为0
         lastSyncTime = 0;
@@ -130,17 +130,17 @@ async function getSiyuanBlocks(type) {
                 let AnkiResponse = await Anki_addNote(deckName, modelName, field1markdown, field2markdown, tags, () => { });
                 //错误处理
                 if (AnkiResponse.code == 0) {
-                    var AnkiId=AnkiResponse.data.AnkiID;
+                    var AnkiId = AnkiResponse.data.AnkiID;
                     //写入同步历史
-                    data=JSON.stringify({
-                        "filename":"SyncHistory.txt",
-                        "content":SiyuanId + "," + AnkiId + "\n",
-                        "mode":"a+"
-                    })
-                    await Server_invoke('/writefile', data);
+                    //data = JSON.stringify()
+                    await Server_invoke('/writefile', {
+                        "filename": "SyncHistory.txt",
+                        "content": SiyuanId + "," + AnkiId + "\n",
+                        "mode": "a+"
+                    });
                     //网页输出
                     insertAfter("添加笔记" + SiyuanId + "," + AnkiId + ",并写入同步历史", result_header);
-                }else{
+                } else {
                     insertAfter("添加笔记" + SiyuanId + "失败!", result_header);
                     insertAfter(AnkiResponse.msg, result_header);
                 }
@@ -152,11 +152,10 @@ async function getSiyuanBlocks(type) {
     var time = formatDate(new Date().getTime(), 'YYMMDDhhmmss');
     //console.log("写入同步时间" + time);
     //写入时间
-    data=JSON.stringify({
-        "filename":"lastSyncTime.txt",
-        "content":time,
-        "mode":"w"
-    })
-    await Server_invoke('/writefile', data);
+    await Server_invoke('/writefile', {
+        "filename": "lastSyncTime.txt",
+        "content": time,
+        "mode": "w"
+    });
     insertAfter("写入同步时间" + time, result_header);
 }

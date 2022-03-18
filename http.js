@@ -9,56 +9,41 @@ var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({
     extended: false
 })
-app.use(express.static('webapp'));//托管网站
-
-app.get('/', function (req, res) {//映射到主页
+//创建application/json解析
+var jsonParser = bodyParser.json();
+//托管网站
+app.use(express.static('webapp'));
+//映射到主页
+app.get('/', function (req, res) {
     res.sendFile(__dirname + '/webapp/index.html');
 })
-
-app.post('/getfile', function (req, res) {//获取文件
-    //console.log(req);
-    var post = '';
-    // 通过req的data事件监听函数，每当接受到请求体的数据，就累加到post变量中
-    req.on('data', function (chunk) {
-        post += chunk;
-        console.log(post);
-    });
-    req.on('end', function () {
-        data = JSON.parse(post);
-        fs.readFile(__dirname + "/"+data.path, "binary", function (err, file) {
-            if (err) {
-                res.writeHead(500, {
-                    'Content-Type': 'text/plain'
-                });
-                res.end(err);
-            } else {
-                res.writeHead(200, {
-                    'Content-Type': "text/plain"
-                });
-                res.write(file, "binary");
-                res.end();
-            }
-        });
+//获取文件
+app.post('/getfile', jsonParser, function (req, res) {
+    data = req.body;
+    fs.readFile(__dirname + "/" + data.path, "binary", function (err, file) {
+        if (err) {
+            res.writeHead(500, {
+                'Content-Type': 'text/plain'
+            });
+            res.end(err);
+        } else {
+            res.writeHead(200, {
+                'Content-Type': "text/plain"
+            });
+            res.write(file, "binary");
+            res.end();
+        }
     });
 })
-
-app.post('/writefile', urlencodedParser, function (req, res) {//写入文件
-    var post = '';
-    // 通过req的data事件监听函数，每当接受到请求体的数据，就累加到post变量中
-    req.on('data', function (chunk) {
-        post += chunk;
-        console.log(post);
-    });
-    req.on('end', function () {
-        data = JSON.parse(post);
-        //console.log(post);
-        var file = require('./file');
-        file.writelastSyncTime(data.filename, data.mode, data.content);
-        //console.log("结束写入"+app_api[2]);
-        res.write("写入" + data.filename + "成功!");
-        res.end();
-    });
+//写入文件
+app.post('/writefile', jsonParser, function (req, res) {
+    data = req.body;
+    var file = require('./file');
+    file.writelastSyncTime(data.filename, data.mode, data.content);
+    res.write("写入" + data.filename + "成功!");
+    res.end();
 })
+
 app.listen(PORT);
 console.log("输入地址以访问:\n http://localhost:" + PORT + "/index.html ");
 
