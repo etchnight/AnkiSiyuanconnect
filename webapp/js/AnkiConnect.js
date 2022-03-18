@@ -38,7 +38,7 @@ async function Anki_deckNames() {
 }
 
 //列出笔记
-async function Anki_findNotes( deckname) {
+async function Anki_findNotes(deckname) {
     const result = await Anki_invoke('findNotes', 6, {
         "query": "deck:" + deckname
     });
@@ -47,7 +47,7 @@ async function Anki_findNotes( deckname) {
 }
 
 //列出卡牌
-async function Anki_findCards( deckname) {
+async function Anki_findCards(deckname) {
     const result = await Anki_invoke('findCards', 6, {
         "query": "deck:" + deckname
     });
@@ -59,6 +59,13 @@ async function Anki_findCards( deckname) {
 async function Anki_notesInfo(notesID = []) {
     const result = await Anki_invoke('notesInfo', 6, {
         "notes": notesID
+    });
+    return result;
+}
+//导入牌组包
+async function Anki_importPackage(path) {
+    const result = await Anki_invoke('importPackage', 6, {
+        "path": path
     });
     return result;
 }
@@ -127,13 +134,13 @@ async function Anki_addNote(deckName, modelName, field1markdown, fiekd2markdown,
         return {
             "code": 0,
             "msg": "",
-            "data": {"AnkiID":result}
-          };
+            "data": { "AnkiID": result }
+        };
     } catch (err) {
         //callback(err+"\n笔记内容为:\n"+field1markdown+"\n"+fiekd2markdown);
         return {
             "code": -1,
-            "msg": err+'\n笔记内容为:\n'+field1markdown+'\n'+fiekd2markdown,
+            "msg": err + '\n笔记内容为:\n' + field1markdown + '\n' + fiekd2markdown,
             "data": null
         }
     }
@@ -175,4 +182,124 @@ async function Anki_updateNoteFields(modelName, id, field1markdown, fiekd2markdo
         console.log("更新Anki失败");
         console.log(err);
     }
+}
+
+
+//创建模板(仅仅Siyuan_Cloze和Siyuan_Basic),以下代码会出现问题,已弃用,改用导入方法创建模板
+async function Anki_createModel(modelName) {
+    const script = "<script>" + "\n" +
+        "    function addStylesheet(src, callback) {" + "\n" +
+        "        var s = document.createElement('link');" + "\n" +
+        "        s.rel = 'stylesheet';" + "\n" +
+        "        s.href = src;" + "\n" +
+        "        s.onload = callback;" + "\n" +
+        "        document.head.appendChild(s);" + "\n" +
+        "    }" + "\n" +
+        "    function addScript(src, callback) {" + "\n" +
+        "        var s = document.createElement('script');" + "\n" +
+        "        s.src = src;" + "\n" +
+        "        s.type = 'text/javascript';" + "\n" +
+        "        s.onload = callback;" + "\n" +
+        "        document.body.appendChild(s);" + "\n" +
+        "    }" + "\n" +
+        "    function replaceAllWhitespaceWithSpace(str) {" + "\n" +
+        "        return str.replace(/[\\t\\v\\f \\u00a0\\u2000-\\u200b\\u2028-\\u2029\\u3000]/g, ' ');" + "\n" +
+        "    }" + "\n" +
+        "    var highlightcssUrl = '_highlight.default.min.css';" + "\n" +
+        "    var showdownUrl = '_showdown.min.js';" + "\n" +
+        "    addStylesheet(highlightcssUrl, function () {" + "\n" +
+        "    });" + "\n" +
+        "    addScript(showdownUrl, function () {" + "\n" +
+        "        var highlightjsUrl = '_highlight.min.js';" + "\n" +
+        "        addScript(highlightjsUrl, function () {" + "\n" +
+        "            function processShowdownDivs() {" + "\n" +
+        "                var showdownConverter = new showdown.Converter();" + "\n" +
+        "                showdownConverter.setFlavor('github');" + "\n" +
+        "                document.querySelectorAll('div.md-content').forEach((div) => {" + "\n" +
+        "                    var rawText = div.innerText.replace(/<\/div>/g, ''); " + "\n" +
+        "                    var classes = div.className.replace(/md-content/g, '');" + "\n" +
+        "                    var text = replaceAllWhitespaceWithSpace(rawText); " + "\n" +
+        "                    //text=rawText;" + "\n" +
+        "                    var html = showdownConverter.makeHtml(text);" + "\n" +
+        "                    var newDiv = document.createElement('div');" + "\n" +
+        "                    newDiv.innerHTML = html;" + "\n" +
+        "                    newDiv.className = classes;" + "\n" +
+        "                    newDiv.querySelectorAll('pre code').forEach((block) => {" + "\n" +
+        "                        hljs.highlightBlock(block);" + "\n" +
+        "                    });" + "\n" +
+        "                    div.parentNode.insertBefore(newDiv, div.nextSibling);" + "\n" +
+        "                    div.style.display = 'none';" + "\n" +
+        "                });" + "\n" +
+        "            };" + "\n" +
+        "" + "\n" +
+        "            processShowdownDivs();" + "\n" +
+        "        });" + "\n" +
+        "    });" + "\n" +
+        "</script>";
+
+    if (modelName == "Siyuan_Cloze") {
+        const result = await Anki_invoke('createModel', 6, {
+            "modelName": "Siyuan_Cloze",
+            "inOrderFields": ["Text", "Extra", "SiyuanLink"],
+            "css": ".card {" + "\n" +
+                "    font-family: arial;" + "\n" +
+                "    font-size: 20px;" + "\n" +
+                "    text-align: left;" + "\n" +
+                "    color: black;" + "\n" +
+                "    background-color: white;" + "\n" +
+                "   }" + "\n" +
+                "   " + "\n" +
+                "   .cloze {" + "\n" +
+                "    font-weight: bold;" + "\n" +
+                "    color: blue;" + "\n" +
+                "   }" + "\n" +
+                "   .nightMode .cloze {" + "\n" +
+                "    color: lightblue;" + "\n" +
+                "   }",
+            "isCloze": true,
+            "cardTemplates": [
+                {
+                    "Front": '<div class="section">' + "\n" +
+                        '<div class="Words md-content">' + "\n" +
+                        '{{cloze:Text}}' + "\n" +
+                        '</div>' + "\n" +
+                        '</div>' + "\n" +
+                        script,
+                    "Back": '<div class="Words md-content">' + "\n" +
+                        '{{cloze:Text}}' + "\n" +
+                        '</div>' + "\n" +
+                        '<hr>' + "\n" +
+                        '{{Extra}}' + "\n" + script
+                }
+            ]
+        });
+        return result;
+    } else if (modelName == "Siyuan_Basic") {
+        const result = await Anki_invoke('createModel', 6, {
+            "modelName": "Siyuan_Basic",
+            "inOrderFields": ["Text", "Answer", "SiyuanLink"],
+            "css": '.card {' + "\n" +
+                'font-family: arial;' + "\n" +
+                'font-size: 20px;' + "\n" +
+                'text-align: center;' + "\n" +
+                'color: black;' + "\n" +
+                'background-color: white;' + "\n" +
+                '}',
+            "isCloze": false,
+            "cardTemplates": [
+                {
+                    "Front": '<div class="section">' + "\n" +
+                        '<div class="Words md-content">' + "\n" +
+                        '{{Question}}' + "\n" +
+                        '</div>' + "\n" +
+                        '</div>' + "\n" +
+                        script,
+                    "Back": '{{Question}}' + "\n" +
+                        '<hr id=answer>' + "\n" + script
+                }
+            ]
+        });
+        return result;
+    }
+    //callback(result);
 }

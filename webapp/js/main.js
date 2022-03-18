@@ -2,11 +2,22 @@
 //此文件存放从Siyuan获取数据的处理
 
 //获取带有ankilink自定义属性的blocks,并处理成Anki需要的形式
-async function getSiyuanBlocks(type) {
+async function Sync(type) {
     console.clear();
     //这些与创建网页有关
     document.getElementById('result').innerHTML = "";
     var result_header = document.getElementById("result");
+    //初始化,判断是否有相关笔记模板,没有则添加
+    let modelNames = await Anki_invoke("modelNames", 6);
+    if (modelNames.indexOf("Siyuan_Cloze") < 0||modelNames.indexOf("Siyuan_Basic") < 0) {
+        insertAfter("首次运行正在初始化", result_header);
+        //await Anki_createModel("Siyuan_Cloze");
+        let dirname = await Server_invoke('/getdirname',{});
+        dirname=dirname.replace(/\\/g,"/");
+        await Anki_importPackage(dirname+"/webapp/AnkiSiyuanconnect.apkg");
+        insertAfter("已创建模板", result_header);
+    }
+
     //获取同步历史
     let SyncHistory = await Server_invoke('/getfile', {
         "path": "webapp/user/SyncHistory.txt"
@@ -23,12 +34,13 @@ async function getSiyuanBlocks(type) {
             AnkiHistory[j] = temparray[1];
         }
     }
-    //console.log(AnkiHistory);
+    //获取上次同步时间
     let lastSyncTime = await Server_invoke('/getfile', {
         "path": 'webapp/user/lastSyncTime.txt'
     });
     lastSyncTime = parseInt(lastSyncTime);//转换为数字类型
-    if (type == "force") {//强制同步,把lastSyncTime设置为0
+    //强制同步,把lastSyncTime设置为0
+    if (type == "force") {
         lastSyncTime = 0;
     }
     //在文本中写入

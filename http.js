@@ -17,6 +17,10 @@ app.use(express.static('webapp'));
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/webapp/index.html');
 })
+//获取服务器路径
+app.post('/getdirname', jsonParser,function (req, res) {
+    res.send(__dirname);
+})
 //获取文件
 app.post('/getfile', jsonParser, function (req, res) {
     data = req.body;
