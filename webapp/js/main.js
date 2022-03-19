@@ -17,6 +17,13 @@ async function Sync(type) {
         await Anki_importPackage(dirname+"/webapp/AnkiSiyuanconnect.apkg");
         insertAfter("已创建模板", result_header);
     }
+    //初始化,判断文件是否存在,不存在则创建
+    await Server_invoke('/checkfile', {
+        "path": "webapp/user/SyncHistory.txt"
+    });
+    await Server_invoke('/checkfile', {
+        "path": "webapp/user/lastSyncTime.txt"
+    });
 
     //获取同步历史
     let SyncHistory = await Server_invoke('/getfile', {
@@ -146,7 +153,7 @@ async function Sync(type) {
                     //写入同步历史
                     //data = JSON.stringify()
                     await Server_invoke('/writefile', {
-                        "filename": "SyncHistory.txt",
+                        "filename": "user/SyncHistory.txt",
                         "content": SiyuanId + "," + AnkiId + "\n",
                         "mode": "a+"
                     });
@@ -165,7 +172,7 @@ async function Sync(type) {
     //console.log("写入同步时间" + time);
     //写入时间
     await Server_invoke('/writefile', {
-        "filename": "lastSyncTime.txt",
+        "filename": "user/lastSyncTime.txt",
         "content": time,
         "mode": "w"
     });
