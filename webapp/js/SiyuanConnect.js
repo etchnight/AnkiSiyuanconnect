@@ -27,17 +27,20 @@ async function Siyuan_lsNotebooks() {
 	});
 	//callback(data.notebooks);
 	let data = JSON.parse(response);
+	data=data.data;
 	return data.notebooks;
 }
 //sql查询
 async function Siyuan_sql(stmt) {
-	const data = await Siyuan_invoke('/invoke', {
+	const response = await Server_invoke('/invoke', {
 		"address": SiyuanRootAddress + '/api/query/sql',
 		"params": {
 			"stmt": stmt
 		}
 	});
 	//callback(data);
+	let data = JSON.parse(response);
+	data=data.data;
 	return data;
 }
 

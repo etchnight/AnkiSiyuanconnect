@@ -8,13 +8,13 @@ async function Sync(type) {
     document.getElementById('HtmlResult').innerHTML = "";
     var result_header = document.getElementById("HtmlResult");
     //初始化,判断是否有相关笔记模板,没有则添加
-    let modelNames = await Anki_invoke("modelNames", 6);
-    if (modelNames.indexOf("Siyuan_Cloze") < 0||modelNames.indexOf("Siyuan_Basic") < 0) {
+    let modelNames = await Anki_modelNames();
+    if (modelNames.indexOf("Siyuan_Cloze") < 0 || modelNames.indexOf("Siyuan_Basic") < 0) {
         insertAfter("首次运行正在初始化", result_header);
         //await Anki_createModel("Siyuan_Cloze");
-        let dirname = await Server_invoke('/getdirname',{});
-        dirname=dirname.replace(/\\/g,"/");
-        await Anki_importPackage(dirname+"/webapp/AnkiSiyuanconnect.apkg");
+        let dirname = await Server_invoke('/getdirname', {});
+        dirname = dirname.replace(/\\/g, "/");
+        await Anki_importPackage(dirname + "/webapp/AnkiSiyuanconnect.apkg");
         insertAfter("已创建模板", result_header);
     }
     //初始化,判断文件是否存在,不存在则创建
@@ -46,9 +46,9 @@ async function Sync(type) {
         "path": 'webapp/user/lastSyncTime.txt'
     });
     //初始化lastSyncTime
-    if(lastSyncTime==""){lastSyncTime=0;}
+    if (lastSyncTime == "") { lastSyncTime = 0; }
     lastSyncTime = parseInt(lastSyncTime);//转换为数字类型
-    
+
     //强制同步,把lastSyncTime设置为0
     if (type == "force") {
         lastSyncTime = 0;
@@ -110,7 +110,7 @@ async function Sync(type) {
                 let Answer = "";
                 //寻找问题
                 for (let j = 0; j < AnkiNote.length; j++) {
-                    console.log(AnkiNote[j]);
+                    //console.log(AnkiNote[j]);
                     if (AnkiNote[j].indexOf("#问题#") != -1 || AnkiNote[j].indexOf("#Anki#") != -1) {
                         Question = AnkiNote[j].replace(/#.*?#/g, "");//删除标签
                         Answer = "";//问题后面才是答案开始
@@ -149,22 +149,48 @@ async function Sync(type) {
                 //这里缺少错误处理
             } else {
                 //添加笔记
-                let AnkiResponse = await Anki_addNote(deckName, modelName, field1markdown, field2markdown, tags, () => { });
+                let AnkiResponse = await Anki_addNote(deckName, modelName, field1markdown, field2markdown, tags);
                 //错误处理
-                if (AnkiResponse.code == 0) {
-                    var AnkiId = AnkiResponse.data.AnkiID;
+                if (AnkiResponse.code != null) {
+                    var AnkiId = AnkiResponse.result.AnkiID;
                     //写入同步历史
-                    //data = JSON.stringify()
                     await Server_invoke('/writefile', {
                         "filename": "user/SyncHistory.txt",
                         "content": SiyuanId + "," + AnkiId + "\n",
                         "mode": "a+"
                     });
-                    //网页输出
                     insertAfter("添加笔记" + SiyuanId + "," + AnkiId + ",并写入同步历史", result_header);
                 } else {
-                    insertAfter("添加笔记" + SiyuanId + "失败!", result_header);
-                    insertAfter(AnkiResponse.msg, result_header);
+                    insertAfter("添加笔记" + SiyuanId + "失败," + AnkiResponse.error, result_header);
+                    //重复数据建立关联
+                    var field1 = "";
+                    var field2 = "";
+                    if (AnkiResponse.error == "cannot create note because it is a duplicate") {
+                        if (modelName == "Siyuan_Basic") {
+                            field1 = "Question";
+                            field2 = "Answer";
+                        } else if (modelName == "Siyuan_Cloze") {
+                            field1 = "Text";
+                            field2 = "Extra";
+                            field2markdown = "*";//目前填空题没有额外字段,所以这里查找要选择所有
+                        }
+                        let duplicateAnkiId = await Anki_findNotes(field1, field1markdown, field2, field2markdown);
+                        console.log(duplicateAnkiId);
+                        if (duplicateAnkiId.length == 1) {
+                            await Server_invoke('/writefile', {
+                                "filename": "user/SyncHistory.txt",
+                                "content": SiyuanId + "," + duplicateAnkiId[0] + "\n",
+                                "mode": "a+"
+                            });
+                            insertAfter("但已将" + SiyuanId + "与" + duplicateAnkiId + "建立关联", result_header);
+                        } else {
+                            insertAfter(SiyuanId +"未找到重复笔记或有多个,请手动处理", result_header);
+                            insertAfter("笔记内容为:" + field1markdown + "\n" + field2markdown, result_header);
+
+                        }
+                    } else {
+                        insertAfter("笔记内容为:" + field1markdown + "\n" + field2markdown, result_header);
+                    }
                 }
 
             }
