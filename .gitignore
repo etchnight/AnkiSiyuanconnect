@@ -1,3 +1,2 @@
-webapp/user/lastSyncTime.txt
-webapp/user/SyncHistory.txt
-webapp/lastSyncTime.txt
+webapp/user
+tempfile

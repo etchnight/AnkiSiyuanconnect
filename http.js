@@ -35,12 +35,10 @@ app.post('/checkfile', jsonParser, function (req, res) {
                 for (let i = 0; i < pathArray.length - 1; i++) {
                     targetpath = targetpath + "/" + pathArray[i];
                     fs.stat(targetpath, function (err, stats) {
-                        console.log(1);
+                        //console.log(1);
                         if (err) {
                             fs.mkdir(targetpath, (err) => { console.log(err); });
-                        } else {
-                            console.log(stats);
-                        }
+                        } 
                         //最后再创建文件,如果写在外面不会成功
                         fs.appendFile(__dirname + "/" + data.path, "", (err) => { });
                     });
@@ -101,6 +99,41 @@ app.post('/writefile', jsonParser, function (req, res) {
     res.end();
 })
 
+//中转网络请求,需要请求的地址和参数均包含在json中
+//接收的是文本化后json(在Server_invoke中定义),转发的是文本化后json,返回值是文本值
+//这个地方使用前端的XMLHttpRequest好像不怎么合适
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+app.post('/invoke', jsonParser, async function (req, res) {
+    const data = req.body;
+    const address = data.address;
+    const params = data.params;
+    var result = "";
+    result = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', address);
+        if (params != "" && params != undefined) {
+            //发送json
+            xhr.send(JSON.stringify(params));
+        } else {
+            xhr.send();
+        }
+        xhr.addEventListener('load', () => {
+            try {
+                //console.log(xhr.responseType);
+                //const response = JSON.parse(xhr.responseText);
+                resolve(xhr.responseText);
+                //console.log(xhr.responseText);
+            } catch (e) {
+                reject(e);
+                //console.log(e);
+                //console.log(response.data);
+            }
+        });
+    });
+    res.write(result);
+    //console.log(result);
+    res.end();
+});
 app.listen(PORT);
 console.log("输入地址以访问:\n http://localhost:" + PORT + "/index.html ");
 

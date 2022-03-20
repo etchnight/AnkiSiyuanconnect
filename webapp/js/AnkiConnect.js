@@ -1,46 +1,49 @@
 //此文件存放与Anki通信相关的代码
 "use strict";
-function Anki_invoke(action, version, params = {}) {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.addEventListener('error', () => reject('failed to issue request'));
-        xhr.addEventListener('load', () => {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (Object.getOwnPropertyNames(response).length != 2) {
-                    throw 'response has an unexpected number of fields';
-                }
-                if (!response.hasOwnProperty('error')) {
-                    throw 'response is missing required error field';
-                }
-                if (!response.hasOwnProperty('result')) {
-                    throw 'response is missing required result field';
-                }
-                if (response.error) {
-                    throw response.error;
-                }
-                resolve(response.result);
-            } catch (e) {
-                reject(e);
-            }
-        });
-
-        xhr.open('POST', 'http://127.0.0.1:8765');
-        xhr.send(JSON.stringify({ action, version, params }));
-    });
+//借助后台进行转发
+/*
+发送值:
+{
+    "address":AnkiRootAddress, 
+    "params":{ 
+        "action":动作名, 
+        "version":6, 
+        "params":{
+            json内容
+        } }
 }
-
+*/
+/*返回值:
+{
+  "result": 返回的内容,
+  "error": 错误
+}
+*/
+const AnkiRootAddress = "http://127.0.0.1:8765";
 //列出卡牌组
 async function Anki_deckNames() {
-    const result = await Anki_invoke('deckNames', 6);
+    const result = await Anki_invoke('/invoke', {
+        "address": AnkiRootAddress,
+        "params": {
+            "action": "deckNames",
+            "version": 6
+        }
+    });
     //callback(result);
     return result;
 }
 
 //列出笔记
 async function Anki_findNotes(deckname) {
-    const result = await Anki_invoke('findNotes', 6, {
-        "query": "deck:" + deckname
+    const result = await Anki_invoke('/invoke', {
+        "address": AnkiRootAddress,
+        "params": {
+            "action": "findNotes",
+            "version": 6,
+            "params": {
+                "query": "deck:" + deckname
+            }
+        }
     });
     //callback(result);
     return result;
@@ -57,15 +60,29 @@ async function Anki_findCards(deckname) {
 
 //笔记信息
 async function Anki_notesInfo(notesID = []) {
-    const result = await Anki_invoke('notesInfo', 6, {
-        "notes": notesID
+    const result = await Anki_invoke('/invoke', {
+        "address": AnkiRootAddress,
+        "params": {
+            "action": 'notesInfo',
+            "version": 6,
+            "params": {
+                "notes": notesID
+            }
+        }
     });
     return result;
 }
 //导入牌组包
 async function Anki_importPackage(path) {
-    const result = await Anki_invoke('importPackage', 6, {
-        "path": path
+    const result = await Anki_invoke('/invoke', {
+        "address": AnkiRootAddress,
+        "params": {
+            "action": 'importPackage',
+            "version": 6,
+            "params": {
+                "path": path
+            }
+        }
     });
     return result;
 }
@@ -84,51 +101,57 @@ async function Anki_addNote(deckName, modelName, field1markdown, fiekd2markdown,
         throw new Error('本程序只支持Siyuan_Basic与Siyuan_Cloze两种模板类型');
     }
     try {
-        let result = await Anki_invoke('addNote', 6, {
-            "note": {
-                "deckName": deckName,
-                "modelName": modelName,
-                "fields": {
-                    [field1]: field1markdown,
-                    [field2]: fiekd2markdown
-                },
-                "options": {
-                    "allowDuplicate": false,
-                    "duplicateScope": "*",
-                    "duplicateScopeOptions": {
-                        "deckName": "*",
-                        "checkChildren": false,
-                        "checkAllModels": false
+        let result = await Anki_invoke('/invoke', {
+            "address": AnkiRootAddress,
+            "params": {
+                "action": 'addNote',
+                "version": 6,
+                "params": {
+                    "note": {
+                        "deckName": deckName,
+                        "modelName": modelName,
+                        "fields": {
+                            [field1]: field1markdown,
+                            [field2]: fiekd2markdown
+                        },
+                        "options": {
+                            "allowDuplicate": false,
+                            "duplicateScope": "*",
+                            "duplicateScopeOptions": {
+                                "deckName": "*",
+                                "checkChildren": false,
+                                "checkAllModels": false
+                            }
+                        },
+                        "tags": tags,
+                        /*
+                        "audio": [{
+                            "url": "https://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kanji=猫&kana=ねこ",
+                            "filename": "yomichan_ねこ_猫.mp3",
+                            "skipHash": "7e2c2f954ef6051373ba916f000168dc",
+                            "fields": [
+                                "Front"
+                            ]
+                        }],
+                        "video": [{
+                            "url": "https://cdn.videvo.net/videvo_files/video/free/2015-06/small_watermarked/Contador_Glam_preview.mp4",
+                            "filename": "countdown.mp4",
+                            "skipHash": "4117e8aab0d37534d9c8eac362388bbe",
+                            "fields": [
+                                "Back"
+                            ]
+                        }],
+                        "picture": [{
+                            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/A_black_cat_named_Tilly.jpg/220px-A_black_cat_named_Tilly.jpg",
+                            "filename": "black_cat.jpg",
+                            "skipHash": "8d6e4646dfae812bf39651b59d7429ce",
+                            "fields": [
+                                "Back"
+                            ]
+                        }]*/
                     }
-                },
-                "tags": tags,
-                /*
-                "audio": [{
-                    "url": "https://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kanji=猫&kana=ねこ",
-                    "filename": "yomichan_ねこ_猫.mp3",
-                    "skipHash": "7e2c2f954ef6051373ba916f000168dc",
-                    "fields": [
-                        "Front"
-                    ]
-                }],
-                "video": [{
-                    "url": "https://cdn.videvo.net/videvo_files/video/free/2015-06/small_watermarked/Contador_Glam_preview.mp4",
-                    "filename": "countdown.mp4",
-                    "skipHash": "4117e8aab0d37534d9c8eac362388bbe",
-                    "fields": [
-                        "Back"
-                    ]
-                }],
-                "picture": [{
-                    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/A_black_cat_named_Tilly.jpg/220px-A_black_cat_named_Tilly.jpg",
-                    "filename": "black_cat.jpg",
-                    "skipHash": "8d6e4646dfae812bf39651b59d7429ce",
-                    "fields": [
-                        "Back"
-                    ]
-                }]*/
+                }
             }
-
         });
         //callback(result);
         return {
@@ -160,13 +183,18 @@ async function Anki_updateNoteFields(modelName, id, field1markdown, fiekd2markdo
         throw new Error('本程序只支持Siyuan_Basic与Siyuan_Cloze两种模板类型');
     }
     try {
-        const result = await Anki_invoke('updateNoteFields', 6, {
-            "note": {
-                "id": id,
-                "fields": {
-                    [field1]: field1markdown,
-                    [field2]: fiekd2markdown//json中key使用变量必须加[]
-                }/*,
+        const result = await Anki_invoke('/invoke', {
+            "address": AnkiRootAddress,
+            "params": {
+                "action": 'updateNoteFields',
+                "version": 6,
+                "params": {
+                    "note": {
+                        "id": id,
+                        "fields": {
+                            [field1]: field1markdown,
+                            [field2]: fiekd2markdown//json中key使用变量必须加[]
+                        }/*,
             "audio": [{
                 "url": "https://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kanji=猫&kana=ねこ",
                 "filename": "yomichan_ねこ_猫.mp3",
@@ -175,6 +203,8 @@ async function Anki_updateNoteFields(modelName, id, field1markdown, fiekd2markdo
                     "Front"
                 ]  
             }]*/
+                    }
+                }
             }
         });
         return result;
@@ -186,6 +216,7 @@ async function Anki_updateNoteFields(modelName, id, field1markdown, fiekd2markdo
 
 
 //创建模板(仅仅Siyuan_Cloze和Siyuan_Basic),以下代码会出现问题,已弃用,改用导入方法创建模板
+/*
 async function Anki_createModel(modelName) {
     const script = "<script>" + "\n" +
         "    function addStylesheet(src, callback) {" + "\n" +
@@ -303,3 +334,36 @@ async function Anki_createModel(modelName) {
     }
     //callback(result);
 }
+*/
+
+//原前台发送代码
+/*function Anki_invoke(action, version, params = {}) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.addEventListener('error', () => reject('failed to issue request'));
+        xhr.addEventListener('load', () => {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (Object.getOwnPropertyNames(response).length != 2) {
+                    throw 'response has an unexpected number of fields';
+                }
+                if (!response.hasOwnProperty('error')) {
+                    throw 'response is missing required error field';
+                }
+                if (!response.hasOwnProperty('result')) {
+                    throw 'response is missing required result field';
+                }
+                if (response.error) {
+                    throw response.error;
+                }
+                resolve(response.result);
+            } catch (e) {
+                reject(e);
+            }
+        });
+
+        xhr.open('POST', 'http://127.0.0.1:8765');
+        xhr.send(JSON.stringify({ action, version, params }));
+    });
+}
+*/

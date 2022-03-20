@@ -5,8 +5,8 @@
 async function Sync(type) {
     console.clear();
     //这些与创建网页有关
-    document.getElementById('result').innerHTML = "";
-    var result_header = document.getElementById("result");
+    document.getElementById('HtmlResult').innerHTML = "";
+    var result_header = document.getElementById("HtmlResult");
     //初始化,判断是否有相关笔记模板,没有则添加
     let modelNames = await Anki_invoke("modelNames", 6);
     if (modelNames.indexOf("Siyuan_Cloze") < 0||modelNames.indexOf("Siyuan_Basic") < 0) {
@@ -45,7 +45,10 @@ async function Sync(type) {
     let lastSyncTime = await Server_invoke('/getfile', {
         "path": 'webapp/user/lastSyncTime.txt'
     });
+    //初始化lastSyncTime
+    if(lastSyncTime==""){lastSyncTime=0;}
     lastSyncTime = parseInt(lastSyncTime);//转换为数字类型
+    
     //强制同步,把lastSyncTime设置为0
     if (type == "force") {
         lastSyncTime = 0;

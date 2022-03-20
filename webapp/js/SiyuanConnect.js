@@ -1,6 +1,48 @@
 "use strict";
 //此文件存放与Siyuan通信相关的代码
+//借助后台进行转发
+/*
+发送值:
+{
+	"address":SiyuanRootAddress+子端点, 
+	"params":{}参数,是一个json
+}
+*/
+/*返回值:
+{
+  "code": 0,
+  "msg": "",
+  "data": {}
+}
+*/
+const SiyuanRootAddress = "http://127.0.0.1:6806";
 
+
+//列出笔记本
+
+async function Siyuan_lsNotebooks() {
+	const response = await Server_invoke('/invoke', {
+		"address": SiyuanRootAddress + "/api/notebook/lsNotebooks",
+		"params": ''
+	});
+	//callback(data.notebooks);
+	let data = JSON.parse(response);
+	return data.notebooks;
+}
+//sql查询
+async function Siyuan_sql(stmt) {
+	const data = await Siyuan_invoke('/invoke', {
+		"address": SiyuanRootAddress + '/api/query/sql',
+		"params": {
+			"stmt": stmt
+		}
+	});
+	//callback(data);
+	return data;
+}
+
+//以下是原始前端代码
+/*
 function Siyuan_invoke(address, params) {
 	return new Promise((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
@@ -28,18 +70,4 @@ function Siyuan_invoke(address, params) {
 	});
 
 }
-
-//列出笔记本
-async function Siyuan_lsNotebooks() {
-	const data = await Siyuan_invoke('/api/notebook/lsNotebooks', '');
-	//callback(data.notebooks);
-	return data.notebooks;
-}
-//sql查询
-async function Siyuan_sql(stmt) {
-	const data = await Siyuan_invoke('/api/query/sql', {
-		"stmt": stmt
-	});
-	//callback(data);
-	return data;
-}
+*/
