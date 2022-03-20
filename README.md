@@ -2,16 +2,18 @@
 
 #### 介绍
 用于思源笔记和Anki进行同步,目前功能较为初步且不稳定,本人也是在边学JavaScript边编写代码,可能有诸多问题,请谨慎使用
+gitee地址:https://gitee.com/dualwind/anki-siyuanconnect
+github地址:https://github.com/etchnight/AnkiSiyuanconnect
 
 #### 软件架构
-使用node.js作为服务器端,用于读写历史同步信息,前端是一个很简陋的网页.另外,目前绝大多数功能放置在前端,由于与Anki通信还存在跨域问题,后期可能会移至后端
+使用node.js作为服务器端,用于读写历史同步信息和转发请求,前端是一个很简陋的网页,目前绝大多数功能放置在前端
 
 
 #### 安装教程
 
 1.  安装node.js
 2.  在Anki中添加AnkiConnect插件,插件码`2055492159`
-3.  在AnkiConnect插件的配置中,`webCorsOriginList`下添加`"http://localhost:3300"`,以解决跨域问题
+3.  ~~在AnkiConnect插件的配置中,`webCorsOriginList`下添加`"http://localhost:3300"`,以解决跨域问题~~
 
 #### 使用说明
 
